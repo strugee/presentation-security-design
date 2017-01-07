@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>Introduction to security design</title>
+		<link rel="stylesheet" type="text/css" href="build/build.css">
+	</head>
+	<body>
+		<article class="deck">
+			<section>
+				<h1>Introduction to security design</h1>
+			</section>
+			<section>
+				<h2>AJ</h2>
+				<h3>he/him</h3>
+				<h3>Winter 2 batch </h3>
+				<h3>Security/privacy</h3>
+			</section>
+			<section>
+				<h2>What we're covering</h2>
+				<h3>tl;dr: system-level stuff</h3>
+				<ul>
+					<li class="bullet">How common security vulnerabilities work</li>
+					<li class="bullet">Mitigating them</li>
+					<li class="bullet">Reducing their impact</li>
+				</ul>
+			</section>
+			<section>
+				<h2>What we're <strong>not</strong> covering</h2>
+				<ul>
+					<li class="bullet">Application-level vulnerabilites</li>
+					<li class="bullet">Secure distribution</li>
+					<li class="bullet">Operational security</li>
+					<li class="bullet">Cryptography</li>
+					<li class="bullet">Responsible disclosure</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Secure programming</h2>
+				<h3 class="bullet">Secure programs are subsets of correct programs</h3>
+				<h3 class="bullet">No program is 100% correct</h3>
+				<h3 class="bullet">Hence: security bugs</h3>
+			</section>
+			<section>
+				<h2>Memory safety bugs</h2>
+				<h3>Use-after-frees</h3>
+				<h3>Dangling pointers</h3>
+				<h3>Buffer overflows</h3>
+			</section>
+			<section>
+				<h2>Moar bugs!</h2>
+				<h3>Race conditions</h3>
+				<h3>Resource leaks</h3>
+				<h3>Insecure IO handling (debatably an application-level bug)</h3>
+				<h3>Preprocessing inputs <em>after</em> they've been validated (ditto)</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Example: buffer overflows</h2>
+				<h3 class="bullet">When a program writes past the end of a buffer</h3>
+				<h3 class="bullet">The write <em>overflows</em> out of the allocated memory region</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Stack-based exploitation aka stack smashing</h2>
+				<h3 class="bullet">Based on overwriting something</h3>
+				<h3 class="bullet">Security-critical information: e.g. a variable in a stack frame</h3>
+				<h3 class="bullet">Execution-related pointers: e.g. function pointers, stack frame return addresses, exception handlers</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Easiest solution: memory-safe languages</h2>
+				<h3 class="bullet">Python, Ruby, JavaScript, etc. - already memory-safe</h3>
+				<h3 class="bullet">C and C++ -> Rust</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Otherwise: tools</h2>
+				<h3 class="bullet">Valgrind</h3>
+				<h3 class="bullet">Your compiler (<code>-fstack-protector[-all]</code>)</h3>
+				<h3 class="bullet">OS tools (e.g. memory junking, ASLR)</h3>
+				<h3 class="bullet">Don't make your tools useless (Heartbleed)</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Also helpful: reducing attack surface</h2>
+				<h3 class="bullet">Attack surface = how much of your program is exposed to attack</h3>
+				<h3 class="bullet">If your program doesn't ever encounter an attacker, that's zero attack surface</h3>
+				<h3 class="bullet">Example: Tor Browser's security slider</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Other bugs besides memory safety</h2>
+				<h3 class="bullet">Assume your program will be compromised</h3>
+				<h3 class="bullet">Preventative measures</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Principle of least privilege</h2>
+				<h3 class="bullet">Makes sense if you assume security bugs</h3>
+				<h3 class="bullet">Obvious example: don't run things as root</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Dropping privileges</h2>
+				<h3 class="bullet">Start as root</h3>
+				<h3 class="bullet">Do some stuff (e.g. bind to a restricted port)</h3>
+				<h3 class="bullet">Set the user the program's running under to an unprivileged user</h3>
+				<h3 class="bullet"><code>nobody</code></h3>
+			</section>
+			<section>
+				<h2 class="bullet">Dividing your program up</h2>
+				<h3 class="bullet">Multiple processes</h3>
+				<h3 class="bullet">Multiple security domains</h3>
+				<h3 class="bullet">Each restricted as much as possible</h3>
+				<h3 class="bullet">Great example: Chrome</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Example: ntpd</h2>
+				<h3 class="bullet">Sets the time of day (requires root)</h3>
+				<h3 class="bullet">Speaks UDP to time servers</h3>
+				<h3 class="bullet">Queries the DNS</h3>
+			</section>
+			<section>
+				<h2 class="bullet">ntpd drawing</h2>
+			</section>
+			<section>
+				<h2 class="bullet">Validation</h2>
+				<h3 class="bullet">Make sure requests make sense</h3>
+				<h3 class="bullet"><a href="https://en.wikipedia.org/wiki/Confused_deputy_attack">Confused deputy attack</a></h3>
+			</section>
+			<section>
+				<h2 class="bullet">chroot jails</h2>
+				<h3 class="bullet">Restrict which parts of the filesystem can be used</h3>
+			</section>
+			<section>
+				<h2 class="bullet"><code>chroot</code> example - setup</h2><code>
+					<pre>$ pwd
+/tmp
+
+$ ls /home
+alex
+
+$ mkdir chroot-jail/{,bin,lib}
+
+$ for i in bin lib lib64; do
+>   sudo mount --bind $i chroot-jail/$i
+> done
+[sudo] password for alex:
+</pre></code>
+			</section>
+			<section>
+				<h2 class="bullet"><code>chroot</code> example - setup</h2><code>
+					<pre>$ tree chroot-jail
+chroot-jail
+├── bin
+│   ├── bash
+[...]
+│   └── zsh5
+└── lib
+    ├── cpp -> /etc/alternatives/cpp
+[...]
+	└── libxt_udp.so
+
+2310 directories, 10644 files
+</pre></code>
+			</section>
+			<section>
+				<h2 class="bullet"><code>chroot</code> example - jail</h2><code>
+					<pre>$ sudo chroot chroot-jail
+
+# pwd
+/
+
+# ls /home
+ls: cannot access /home: No such file or directory
+
+# ls
+bin  lib  lib64	 usr
+
+# exit
+
+$ pwd
+/tmp
+</pre></code>
+			</section>
+			<section>
+				<h2 class="bullet">We prevented ourselves from accessing <code>/home</code></h2>
+				<h3 class="bullet">Normally programs don't need this setup</h3>
+				<h3 class="bullet">Secure coding: have your program put itself in a jail</h3>
+				<h3 class="bullet">There are more tools, but they're not portable</h3>
+			</section>
+			<section>
+				<h2 class="bullet">Almost fin</h2>
+				<h3 class="bullet">In general, just remember: your program <strong>will<strong> get pwd</h3>
+				<h3 class="bullet">(But still try to mitigate exploits and reduce attack surface)</h3>
+				<h3 class="bullet">Final notes: anything the <a href="https://openbsd.org/">OpenBSD</a> guys do is excellent</h3>
+				<h3 class="bullet"><a href="http://www.ranum.com/security/computer_security/editorials/dumb/">Six dumbest ideas in computer security</a></h3>
+			</section>
+			<section>
+				<h2 class="bullet">Fin</h2>
+			</section>
+			<section>
+				<h2 class="bullet">Access this presentation again</h2>
+				<h3 class="bullet"><a href="https://strugee.net/presentation-security-design">https://strugee.net/presentation-security-design</a></h3>
+				<h3 class="bullet">Or get the <a href="https://github.com/strugee/presentation-security-design">source code</a></h3>
+			</section>
+		</article>
+		<script src="build/build.js"></script>
+	</body>
+</html>
