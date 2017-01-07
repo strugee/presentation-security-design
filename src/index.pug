@@ -107,7 +107,6 @@ html
 				h3.bullet Multiple processes
 				h3.bullet Multiple security domains
 				h3.bullet Each restricted as much as possible
-				h3.bullet Great example: Chrome
 
 			section
 				h2.bullet Example: ntpd
@@ -119,6 +118,9 @@ html
 				h2.bullet ntpd drawing
 
 			section
+				h2.bullet Good example: Chrome
+
+			section
 				h2.bullet Validation
 				h3.bullet Make sure requests make sense
 				h3.bullet
@@ -126,6 +128,8 @@ html
 
 			section
 				h2.bullet chroot jails
+				q Chroot() causes <code>dirname</code> to become the root directory, that is, the starting point for path searches of pathnames beginning with `/'.
+				cite - <code>chroot(2)</code>
 				h3.bullet Restrict which parts of the filesystem can be used
 
 			section
@@ -138,10 +142,10 @@ html
 						$ ls /home
 						alex
 
-						$ mkdir chroot-jail/{,bin,lib}
+						$ mkdir chroot-jail/{,bin,lib,lib64}
 
 						$ for i in bin lib lib64; do
-						>   sudo mount --bind $i chroot-jail/$i
+						>   sudo mount --bind /$i chroot-jail/$i
 						> done
 						[sudo] password for alex:
 
@@ -158,12 +162,14 @@ html
 						└── lib
 						    ├── cpp -> /etc/alternatives/cpp
 						[...]
-							└── libxt_udp.so
+						│   └── libxt_udp.so
+						└── lib64
+						    └── ld-linux-x86-64.so.2 -> /lib/x86_64-linux-gnu/ld-2.19.so
 
-						2310 directories, 10644 files
+						2311 directories, 10645 files
 
 			section
-				h2.bullet <code>chroot</code> example - jail
+				h2.bullet <code>chroot</code> example - jailing
 				code
 					pre.
 						$ sudo chroot chroot-jail
@@ -174,8 +180,8 @@ html
 						# ls /home
 						ls: cannot access /home: No such file or directory
 
-						# ls
-						bin  lib  lib64	 usr
+						# ls /
+						bin  lib  lib64
 
 						# exit
 
@@ -186,11 +192,12 @@ html
 				h2.bullet We prevented ourselves from accessing <code>/home</code>
 				h3.bullet Normally programs don't need this setup
 				h3.bullet Secure coding: have your program put itself in a jail
+				h3.bullet Note: root can break out of chroot jails
 				h3.bullet There are more tools, but they're not portable
 
 			section
 				h2.bullet Almost fin
-				h3.bullet In general, just remember: your program <strong>will<strong> get pwd
+				h3.bullet In general, just remember: your program <strong>will<strong> get pwnd
 				h3.bullet (But still try to mitigate exploits and reduce attack surface)
 				h3.bullet Final notes: anything the 
 					a(href="https://openbsd.org/") OpenBSD
