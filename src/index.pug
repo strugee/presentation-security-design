@@ -21,15 +21,149 @@ html
 				h3 Security/privacy
 
 			section
-				h2 Bullet List
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-bullets">bespoke-bullets</a>
-				ul.build.build-items
-					li Bullet 1
-					li Bullet 2
-					li Bullet 3
+				h2 What we're covering
+				h3 tl;dr: system-level stuff
+				ul
+					li.bullet How common security vulnerabilities work
+					li.bullet Mitigating them
+					li.bullet Reducing their impact
 
 			section
-				iframe(width="640", height="360", src="https://www.youtube.com/embed/AV3kYPutYfs?rel=0&amp;showinfo=0&amp;controls=0&amp;enablejsapi=1&amp;loop=1&amp;playlist=AV3kYPutYfs", frameborder="0", allowfullscreen, data-volume="0")
+				h2 What we're <strong>not</strong> covering
+				ul
+					li.bullet Application-level vulnerabilites
+					li.bullet Secure distribution
+					li.bullet Operational security
+					li.bullet Cryptography
+					li.bullet Responsible disclosure
+
+			section
+				h2 Secure programming
+				h3.bullet Secure programs are subsets of correct programs
+				h3.bullet No program is 100% correct
+				h3.bullet Hence: security bugs
+
+			section
+				h2 Memory safety bugs
+				h3 Use-after-frees
+				h3 Dangling pointers
+				h3 Buffer overflows
+
+			section
+				h2 Moar bugs!
+				h3 Race conditions
+				h3 Resource leaks
+				h3 Insecure IO handling (debatably an application-level bug)
+				h3 Preprocessing inputs <em>after</em> they've been validated (ditto)
+
+			section
+				h2.bullet Example: buffer overflows
+				h3.bullet When a program writes past the end of a buffer
+				h3.bullet The write <em>overflows</em> out of the allocated memory region
+
+			section
+				h2.bullet Exploitation (stack-based)
+				h3.bullet Based on overwriting something
+				h3.bullet Security-critical information: e.g. a variable in a stack frame
+				h3.bullet Execution-related pointers: e.g. function pointers, stack frame return addresses, exception handlers
+
+			section
+				h2.bullet Easiest solution: memory-safe languages
+				h3.bullet Python, Ruby, JavaScript, etc. - already memory-safe
+				h3.bullet C and C++ -> Rust
+
+			section
+				h2.bullet Otherwise: tools
+				h3.bullet Valgrind
+				h3.bullet OS tools (e.g. memory junking, ASLR)
+				h3.bullet Don't make your tools useless (Heartbleed)
+
+			section
+				h2.bullet Other bugs besides memory safety
+				h3.bullet Assume your program will be compromised
+				h3.bullet Preventative measures
+
+			section
+				h2.bullet Principle of least privilege
+				h3.bullet Makes sense if you assume security bugs
+				h3.bullet Obvious example: don't run things as root
+
+			section
+				h2.bullet Dropping privileges
+				h3.bullet Start as root
+				h3.bullet Do some stuff (e.g. bind to a restricted port)
+				h3.bullet Set the user the program's running under to an unprivileged user
+				h3.bullet <code>nobody</code>
+
+			section
+				h2.bullet Dividing your program up
+				h3.bullet Multiple processes
+				h3.bullet Multiple security domains
+				h3.bullet Each restricted as much as possible
+
+			section
+				h2.bullet Example: ntpd
+				h3.bullet Sets the time of day (requires root)
+				h3.bullet Speaks UDP to time servers
+				h3.bullet Queries the DNS
+
+			section
+				h2.bullet ntpd drawing
+
+			section
+				h2.bullet Validation
+				h3.bullet Make sure requests make sense
+				// TODO link
+				h3.bullet Confused deputy attack
+
+			section
+				h2.bullet chroot jails
+				h3.bullet Restrict which parts of the filesystem can be used
+
+			section
+				h2.bullet <code>chroot</code> example - setup
+				code
+					pre.
+						% pwd
+						/tmp
+
+						% ls /home
+						alex
+
+						% mkdir chroot-jail/{,bin,lib}
+
+						% for i in bin lib lib64; do sudo mount --bind $i chroot-jail/$i; done
+						[sudo] password for alex:
+
+						% tree chroot-jail
+						chroot-jail
+						├── bin
+						│   ├── bash
+						[...]
+						│   └── zsh5
+						└── lib
+						    ├── cpp -> /etc/alternatives/cpp
+						[...]
+							└── libxt_udp.so
+
+						2310 directories, 10644 files
+
+			section
+				h2.bullet <code>chroot</code> example - jail
+				code
+					pre.
+						% sudo chroot chroot-jail
+
+						# pwd
+						/
+
+						# ls /home
+						ls: cannot access /home: No such file or directory
+
+			section
+				h2.bullet We prevented ourselves from accessing <code>/home</code>
+				h3.bullet Normally programs don't need this setup
+				h3.bullet Secure coding: have your program put itself in a jail
 
 			section
 				h2 Syntax Highlighting
