@@ -20,7 +20,7 @@ html
 				h3 Winter 2 batch 
 				h3 Security/privacy
 
-			section
+			section(data-bespoke-hash='covering')
 				h2 What we're covering
 				h3 tl;dr: system-level stuff
 				ul
@@ -28,7 +28,7 @@ html
 					li.bullet Mitigating them
 					li.bullet Reducing their impact
 
-			section
+			section(data-bespoke-hash='not-covering')
 				h2 What we're <strong>not</strong> covering
 				ul
 					li.bullet Application-level vulnerabilites
@@ -53,8 +53,6 @@ html
 				h2 Moar bugs!
 				h3 Race conditions
 				h3 Resource leaks
-				h3 Insecure IO handling (debatably an application-level bug)
-				h3 Preprocessing inputs <em>after</em> they've been validated (ditto)
 
 			section
 				h2.bullet Example: buffer overflows
@@ -62,7 +60,7 @@ html
 				h3.bullet The write <em>overflows</em> out of the allocated memory region
 
 			section
-				h2.bullet Stack-based exploitation aka stack smashing
+				h2.bullet Stack-based exploitation (aka stack smashing)
 				h3.bullet Based on overwriting something
 				h3.bullet Security-critical information: e.g. a variable in a stack frame
 				h3.bullet Execution-related pointers: e.g. function pointers, stack frame return addresses, exception handlers
@@ -95,7 +93,7 @@ html
 				h3.bullet Makes sense if you assume security bugs
 				h3.bullet Obvious example: don't run things as root
 
-			section
+			section(data-bespoke-hash='privilege-separation')
 				h2.bullet Dropping privileges
 				h3.bullet Start as root
 				h3.bullet Do some stuff (e.g. bind to a restricted port)
@@ -126,7 +124,7 @@ html
 				h3.bullet
 					a(href="https://en.wikipedia.org/wiki/Confused_deputy_problem") Confused deputy attack
 
-			section
+			section(data-bespoke-hash='chroot-jails')
 				h2.bullet chroot jails
 				q Chroot() causes <code>dirname</code> to become the root directory, that is, the starting point for path searches of pathnames beginning with `/'.
 				cite - <code>chroot(2)</code>
@@ -149,7 +147,7 @@ html
 						> done
 						[sudo] password for alex:
 
-			section
+			section.emphatic
 				h2.bullet <code>chroot</code> example - setup
 				code
 					pre.
@@ -164,7 +162,7 @@ html
 						[...]
 						│   └── libxt_udp.so
 						└── lib64
-						    └── ld-linux-x86-64.so.2 -> /lib/x86_64-linux-gnu/ld-2.19.so
+						    └── ld-linux-x86-64.so.2 -> /lib/[...]
 
 						2311 directories, 10645 files
 
@@ -188,8 +186,11 @@ html
 						$ pwd
 						/tmp
 
-			section
+			section.emphatic
 				h2.bullet We prevented ourselves from accessing <code>/home</code>
+
+			section
+				h2.bullet Using
 				h3.bullet Normally programs don't need this setup
 				h3.bullet Secure coding: have your program put itself in a jail
 				h3.bullet Note: root can break out of chroot jails
