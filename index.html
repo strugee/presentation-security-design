@@ -17,7 +17,7 @@
 				<h3>Winter 2 batch </h3>
 				<h3>Security/privacy</h3>
 			</section>
-			<section>
+			<section data-bespoke-hash="covering">
 				<h2>What we're covering</h2>
 				<h3>tl;dr: system-level stuff</h3>
 				<ul>
@@ -26,7 +26,7 @@
 					<li class="bullet">Reducing their impact</li>
 				</ul>
 			</section>
-			<section>
+			<section data-bespoke-hash="not-covering">
 				<h2>What we're <strong>not</strong> covering</h2>
 				<ul>
 					<li class="bullet">Application-level vulnerabilites</li>
@@ -52,8 +52,6 @@
 				<h2>Moar bugs!</h2>
 				<h3>Race conditions</h3>
 				<h3>Resource leaks</h3>
-				<h3>Insecure IO handling (debatably an application-level bug)</h3>
-				<h3>Preprocessing inputs <em>after</em> they've been validated (ditto)</h3>
 			</section>
 			<section>
 				<h2 class="bullet">Example: buffer overflows</h2>
@@ -61,7 +59,7 @@
 				<h3 class="bullet">The write <em>overflows</em> out of the allocated memory region</h3>
 			</section>
 			<section>
-				<h2 class="bullet">Stack-based exploitation aka stack smashing</h2>
+				<h2 class="bullet">Stack-based exploitation (aka stack smashing)</h2>
 				<h3 class="bullet">Based on overwriting something</h3>
 				<h3 class="bullet">Security-critical information: e.g. a variable in a stack frame</h3>
 				<h3 class="bullet">Execution-related pointers: e.g. function pointers, stack frame return addresses, exception handlers</h3>
@@ -94,7 +92,7 @@
 				<h3 class="bullet">Makes sense if you assume security bugs</h3>
 				<h3 class="bullet">Obvious example: don't run things as root</h3>
 			</section>
-			<section>
+			<section data-bespoke-hash="privilege-separation">
 				<h2 class="bullet">Dropping privileges</h2>
 				<h3 class="bullet">Start as root</h3>
 				<h3 class="bullet">Do some stuff (e.g. bind to a restricted port)</h3>
@@ -106,7 +104,6 @@
 				<h3 class="bullet">Multiple processes</h3>
 				<h3 class="bullet">Multiple security domains</h3>
 				<h3 class="bullet">Each restricted as much as possible</h3>
-				<h3 class="bullet">Great example: Chrome</h3>
 			</section>
 			<section>
 				<h2 class="bullet">Example: ntpd</h2>
@@ -118,12 +115,17 @@
 				<h2 class="bullet">ntpd drawing</h2>
 			</section>
 			<section>
+				<h2 class="bullet">Good example: Chrome</h2>
+			</section>
+			<section>
 				<h2 class="bullet">Validation</h2>
 				<h3 class="bullet">Make sure requests make sense</h3>
 				<h3 class="bullet"><a href="https://en.wikipedia.org/wiki/Confused_deputy_attack">Confused deputy attack</a></h3>
 			</section>
-			<section>
+			<section data-bespoke-hash="chroot-jails">
 				<h2 class="bullet">chroot jails</h2>
+				<q>Chroot() causes <code>dirname</code> to become the root directory, that is, the starting point for path searches of pathnames beginning with `/'.</q>
+				<cite>- <code>chroot(2)</code></cite>
 				<h3 class="bullet">Restrict which parts of the filesystem can be used</h3>
 			</section>
 			<section>
@@ -134,15 +136,15 @@
 $ ls /home
 alex
 
-$ mkdir chroot-jail/{,bin,lib}
+$ mkdir chroot-jail/{,bin,lib,lib64}
 
 $ for i in bin lib lib64; do
->   sudo mount --bind $i chroot-jail/$i
+>   sudo mount --bind /$i chroot-jail/$i
 > done
 [sudo] password for alex:
 </pre></code>
 			</section>
-			<section>
+			<section class="emphatic">
 				<h2 class="bullet"><code>chroot</code> example - setup</h2><code>
 					<pre>$ tree chroot-jail
 chroot-jail
@@ -153,13 +155,15 @@ chroot-jail
 └── lib
     ├── cpp -> /etc/alternatives/cpp
 [...]
-	└── libxt_udp.so
+│   └── libxt_udp.so
+└── lib64
+    └── ld-linux-x86-64.so.2 -> /lib/[...]
 
-2310 directories, 10644 files
+2311 directories, 10645 files
 </pre></code>
 			</section>
 			<section>
-				<h2 class="bullet"><code>chroot</code> example - jail</h2><code>
+				<h2 class="bullet"><code>chroot</code> example - jailing</h2><code>
 					<pre>$ sudo chroot chroot-jail
 
 # pwd
@@ -168,8 +172,8 @@ chroot-jail
 # ls /home
 ls: cannot access /home: No such file or directory
 
-# ls
-bin  lib  lib64	 usr
+# ls /
+bin  lib  lib64
 
 # exit
 
@@ -177,16 +181,21 @@ $ pwd
 /tmp
 </pre></code>
 			</section>
-			<section>
+			<section class="emphatic">
 				<h2 class="bullet">We prevented ourselves from accessing <code>/home</code></h2>
+			</section>
+			<section>
+				<h2 class="bullet">Using</h2>
 				<h3 class="bullet">Normally programs don't need this setup</h3>
 				<h3 class="bullet">Secure coding: have your program put itself in a jail</h3>
+				<h3 class="bullet">Note: root can break out of chroot jails</h3>
 				<h3 class="bullet">There are more tools, but they're not portable</h3>
 			</section>
 			<section>
 				<h2 class="bullet">Almost fin</h2>
-				<h3 class="bullet">In general, just remember: your program <strong>will<strong> get pwd</h3>
+				<h3 class="bullet">In general, just remember: your program <strong>will<strong> get pwnd</h3>
 				<h3 class="bullet">(But still try to mitigate exploits and reduce attack surface)</h3>
+				<h3 class="bullet">Audits</h3>
 				<h3 class="bullet">Final notes: anything the <a href="https://openbsd.org/">OpenBSD</a> guys do is excellent</h3>
 				<h3 class="bullet"><a href="http://www.ranum.com/security/computer_security/editorials/dumb/">Six dumbest ideas in computer security</a></h3>
 			</section>
